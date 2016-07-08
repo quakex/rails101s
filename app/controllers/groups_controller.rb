@@ -23,6 +23,8 @@ class GroupsController < ApplicationController
     @group = current_user.groups.new(group_params)
 
     if @group.save
+      # User 在建立group后自动成为group的一员
+      current_user.join!(@group)
       redirect_to groups_path
       flash[:notice] = "新增讨论版成功！"
     else
@@ -47,6 +49,29 @@ class GroupsController < ApplicationController
     redirect_to groups_path, alert:"讨论版已经删除"
   end
 
+  def join
+    @group = Group.find(params[:id])
+
+    if !current_user.is_member_of?(@group)
+      current_user.join!(@group)
+      flash[:notice] = "加入本讨论版成功！"
+    else
+      flash[:warning] = "你已经是本讨论版成员了！"
+    end
+    redirect_to group_path(@group)
+  end
+
+  def quit
+    @group = Group.find(params[:id])
+
+    if current_user.is_member_of?(@group)
+      current_user.quit!(@group)
+      flash[:alert] = "已经退出本讨论版！"
+    else
+      flash[:warning] = "别闹，你不是本讨论版成员，不用退出 "
+    end
+    redirect_to group_path(@group)
+  end
   private
 
   def group_params

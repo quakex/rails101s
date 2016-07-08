@@ -6,4 +6,21 @@ class User < ActiveRecord::Base
 
   has_many :groups
   has_many :posts
+
+  has_many :group_users
+  has_many :participated_groups, through: :group_users, source: :group  
+  
+  # user 加入退出group
+  def join!(group)
+    participated_groups << group  
+  end
+
+  def quit!(group)
+    participated_groups.delete(group)
+  end
+  # user 必须要是这个group的成员才能发表文章
+  def is_member_of?(group)
+    participated_groups.include?(group)
+  end
+
 end
